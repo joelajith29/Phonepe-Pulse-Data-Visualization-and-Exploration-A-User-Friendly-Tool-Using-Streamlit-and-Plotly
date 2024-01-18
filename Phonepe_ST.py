@@ -114,9 +114,9 @@ if option =='Phonepe Map':
 elif option == 'Analysis':
     # Sidebar Buttons (SelectBox)
     with st.sidebar:
-        st.header(":blue[Choose Type,Years and Quarter to do Analysis]")
+        st.header(":red[Choose Type,Years and Quarter to do Analysis]")
         st.divider()
-        opt, dummy = st.columns([5, 1])
+        opt, dummy = st.columns(2)
         with opt:
             trans = st.selectbox('', options=['Transactions', 'Users'], index=None, placeholder='Type',
                                  label_visibility='collapsed')
@@ -134,7 +134,7 @@ elif option == 'Analysis':
             st.markdown('#### :orange[PhonePe] :green[India]')
             col1, col2, col3 = st.columns(3)
             with col1:
-                query1 = f'''select concat(sum(Transaction_Count)/10000000,' Cr') as trans from aggre_trans 
+                query1 = f'''select concat( sum(Transaction_Count)/10000000,' Cr') as trans from aggre_trans 
                 where years={year} and quarter = {quarter};'''
                 all_trans = pd.read_sql_query(query1, mydb)
                 st.dataframe(all_trans, column_config={"trans": "Total Number of Transactions"}, hide_index=True)
@@ -151,7 +151,7 @@ elif option == 'Analysis':
              # Transactions Category Tab
         with tab2:
                 st.markdown(f"### :grey[Tables on Transaction Count and Payment Value based on the category]")
-                col1, col2 = st.columns([4, 4])
+                col1, col2 = st.columns(2)
                 with col1:
                     query4 = f'''select transaction_type as mode , concat(sum(transaction_count)/100000,' lakh') as tc from aggre_trans 
                     where years=years and quarter=quarter group by transaction_type;'''
@@ -209,6 +209,7 @@ elif option == 'Analysis':
                                  hide_index=True)
                 
 
+
 # When the transaction type is Users
     elif trans == 'Users':
         tab1, tab2 = st.tabs(['Details', 'TOP 10'])
@@ -242,17 +243,20 @@ elif option == 'Analysis':
                 where years={year} and quarter={quarter} order by rnk asc limit 10;'''
                 dist = pd.read_sql_query(query12, mydb)
                 st.dataframe(dist, column_config={"reguser": f"Registered Users"}, hide_index=True)
-                      
+            
+            
+
+
 elif option =='Visualization':
     col1, col2, col3 = st.columns(3)
     query1 = f'''select years,sum(transaction_amount) trans from aggre_trans
     group by years;'''
     data = pd.read_sql_query(query1, mydb)
-    fig = px.pie(data,names='years', values='trans',width=500, height=1000, title='Total  Transaction Year Wise')
+    fig = px.pie(data,names='years', values='trans',width=500, height=1000, title='Total  Transaction Year Wise - Pie Chart')
     st.plotly_chart(fig)
 
     st.markdown('#### Animated chart ')
-    col1, col2,col3,col4 = st.columns([2,2,2,2])
+    col1, col2,col3,col4 = st.columns(4)
     with col1:
         query2 = f'''select transaction_type,years,sum(transaction_count) as tc,
                     concat('₹',sum(Transaction_Amount)/10000000,' Cr') as amount from aggre_trans
@@ -260,7 +264,7 @@ elif option =='Visualization':
     df = pd.read_sql_query(query2, mydb)
     fig = px.bar(df, x='years', y='tc', color='transaction_type', hover_name='amount',
                     color_discrete_sequence=px.colors.sequential.Turbo, animation_frame='years', range_x=[2018, 2023],
-                    range_y=[0, 50000000000], title='Transaction Count Vs Year')
+                    range_y=[0, 50000000000], title='Transaction Count Vs Year - Bar Chart')
     st.plotly_chart(fig)
 
     with col2:
@@ -268,7 +272,7 @@ elif option =='Visualization':
     group by categories ;'''
     data = pd.read_sql_query(query3, mydb)
     fig = px.scatter(data, x='categories', y='Amount',
-                    title='Categories Of Transaction Amounts')
+                    title='Categories Of Transaction Amounts - Scatter Plot')
     st.plotly_chart(fig)
 
     with col3:
@@ -276,12 +280,12 @@ elif option =='Visualization':
         group by states;'''
         data = pd.read_sql_query(query4, mydb)
     fig = px.line(data, x='states', y='Registereduser',width=800, height=400,
-    title='State Wise Registered User')
+    title='State Wise Registered User - Line Chart')
     st.plotly_chart(fig)
 
     with col4:
         query5 = f'''select years year,avg(transaction_count) avgtransaction from aggre_trans
         group by year;'''
         data = pd.read_sql_query(query5, mydb)
-    fig = px.histogram(data,x='year',y='avgtransaction', nbins=30, title='Histogram Example')  
+    fig = px.histogram(data,x='year',y='avgtransaction', nbins=30, title='Sum of Avg Transactions - Histogram Chart')  
     st.plotly_chart(fig)
